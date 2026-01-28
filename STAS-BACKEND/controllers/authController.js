@@ -257,7 +257,19 @@ const bootstrapAdmin = async (req, res) => {
         }
         const existingAdmin = await User.findOne({ role: 'admin' });
         if (existingAdmin) {
-            return res.status(400).json({ message: 'Admin already exists' });
+            // Allow password reset if secret is correct
+            const salt = await bcrypt.genSalt(10);
+            existingAdmin.password = await bcrypt.hash(password, salt);
+            // Update other fields if provided
+            if (name) existingAdmin.name = name;
+            if (email) existingAdmin.email = email;
+            if (contactNumber) existingAdmin.contactNumber = contactNumber;
+            
+            await existingAdmin.save();
+            return res.status(200).json({ 
+                message: 'Admin updated successfully',
+                token: generateToken(existingAdmin._id)
+            });
         }
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'Name, email, and password are required' });
