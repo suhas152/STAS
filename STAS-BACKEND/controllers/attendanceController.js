@@ -8,6 +8,7 @@ const markAttendance = async (req, res) => {
     const userId = req.user._id;
 
     try {
+        /* 
         // --- Time Window Validation ---
         const now = new Date();
         const currentHour = now.getHours();
@@ -34,6 +35,7 @@ const markAttendance = async (req, res) => {
              });
         }
         // ------------------------------
+        */
 
         const attendanceDate = new Date(date);
         attendanceDate.setHours(0, 0, 0, 0);
