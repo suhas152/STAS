@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { registerUser, loginUser, getUsers, deleteUser, updateProfile, getProfile, createWard, createCook } = require('../controllers/authController');
+const { registerUser, loginUser, getUsers, deleteUser, updateProfile, getProfile, createWard, createCook, bootstrapAdmin } = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 const storage = multer.diskStorage({
@@ -34,6 +34,7 @@ function checkFileType(file, cb) {
 }
 
 router.post('/register', registerUser);
+router.post('/bootstrap-admin', bootstrapAdmin);
 router.post('/create-ward', protect, authorize('admin'), createWard);
 router.post('/create-cook', protect, authorize('admin'), createCook);
 router.post('/login', loginUser);

@@ -8,6 +8,14 @@ const markAttendance = async (req, res) => {
     const userId = req.user._id;
 
     try {
+        const toBool = (v) => {
+            if (typeof v === 'string') {
+                const s = v.trim().toLowerCase();
+                if (['true', '1', 'yes', 'y', 'on'].includes(s)) return true;
+                if (['false', '0', 'no', 'n', 'off'].includes(s)) return false;
+            }
+            return Boolean(v);
+        };
         /* 
         // --- Time Window Validation ---
         const now = new Date();
@@ -37,19 +45,15 @@ const markAttendance = async (req, res) => {
         // ------------------------------
         */
 
-        const attendanceDate = new Date(date);
+        const attendanceDate = date ? new Date(date) : new Date();
+        if (Number.isNaN(attendanceDate.getTime())) {
+             return res.status(400).json({ message: 'Invalid date' });
+        }
         attendanceDate.setHours(0, 0, 0, 0);
-
-        // Validation: Must be at least one day in advance
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
-        // Calculate difference in days
-        const diffTime = attendanceDate - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays < 1) {
-             return res.status(400).json({ message: 'Attendance must be marked at least one day in advance.' });
+        if (attendanceDate < today) {
+             return res.status(400).json({ message: 'Attendance cannot be marked for past dates.' });
         }
 
         const start = new Date(attendanceDate);
@@ -63,9 +67,9 @@ const markAttendance = async (req, res) => {
 
         if (attendance) {
             // Update
-            attendance.breakfast = breakfast !== undefined ? breakfast : attendance.breakfast;
-            attendance.lunch = lunch !== undefined ? lunch : attendance.lunch;
-            attendance.dinner = dinner !== undefined ? dinner : attendance.dinner;
+            attendance.breakfast = breakfast !== undefined ? toBool(breakfast) : attendance.breakfast;
+            attendance.lunch = lunch !== undefined ? toBool(lunch) : attendance.lunch;
+            attendance.dinner = dinner !== undefined ? toBool(dinner) : attendance.dinner;
             await attendance.save();
             res.json(attendance);
         } else {
@@ -73,9 +77,9 @@ const markAttendance = async (req, res) => {
             attendance = await Attendance.create({
                 user: userId,
                 date: attendanceDate,
-                breakfast: breakfast || false,
-                lunch: lunch || false,
-                dinner: dinner || false
+                breakfast: breakfast !== undefined ? toBool(breakfast) : false,
+                lunch: lunch !== undefined ? toBool(lunch) : false,
+                dinner: dinner !== undefined ? toBool(dinner) : false
             });
             res.status(201).json(attendance);
         }
@@ -124,12 +128,12 @@ const getAttendanceStats = async (req, res) => {
         };
 
         attendanceRecords.forEach(record => {
-            if (record.user) { // Ensure user exists
+            if (record.user) {
                 const studentInfo = {
-                    name: record.user.name,
-                    email: record.user.email,
-                    contact: record.user.contactNumber,
-                    profileImage: record.user.profileImage
+                    name: (record.user && record.user['name']) || '',
+                    email: (record.user && record.user['email']) || '',
+                    contact: (record.user && record.user['contactNumber']) || '',
+                    profileImage: (record.user && record.user['profileImage']) || null
                 };
 
                 if (record.breakfast) stats.breakfast.push(studentInfo);

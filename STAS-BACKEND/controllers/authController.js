@@ -249,4 +249,38 @@ const createCook = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser, getUsers, deleteUser, updateProfile, getProfile, createWard, createCook };
+const bootstrapAdmin = async (req, res) => {
+    const { secret, name, email, password, contactNumber } = req.body;
+    try {
+        if (!process.env.ADMIN_BOOTSTRAP_SECRET || secret !== process.env.ADMIN_BOOTSTRAP_SECRET) {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        const existingAdmin = await User.findOne({ role: 'admin' });
+        if (existingAdmin) {
+            return res.status(400).json({ message: 'Admin already exists' });
+        }
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: 'Name, email, and password are required' });
+        }
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        const user = await User.create({
+            name,
+            email,
+            password: hashedPassword,
+            contactNumber,
+            role: 'admin'
+        });
+        return res.status(201).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            token: generateToken(user._id),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { registerUser, loginUser, getUsers, deleteUser, updateProfile, getProfile, createWard, createCook, bootstrapAdmin };
