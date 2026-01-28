@@ -163,7 +163,7 @@ const AdminDashboard = () => {
                     <li key={idx} className="flex items-center gap-3 text-gray-300 bg-gray-900/50 p-2 rounded border border-gray-700">
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
                             {s.profileImage ? (
-                                <img src={`http://localhost:5000${s.profileImage}`} alt={s.name} className="w-full h-full object-cover" />
+                                <img src={`${API_BASE_URL}${s.profileImage}`} alt={s.name} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="flex items-center justify-center h-full text-xs text-gray-400">👤</div>
                             )}
@@ -528,7 +528,7 @@ const AdminDashboard = () => {
                                                 >
                                                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex-shrink-0 group-hover:ring-2 group-hover:ring-blue-500 transition-all">
                                                         {user.profileImage ? (
-                                                            <img src={`http://localhost:5000${user.profileImage}`} alt={user.name} className="w-full h-full object-cover" />
+                                                            <img src={`${API_BASE_URL}${user.profileImage}`} alt={user.name} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <div className="flex items-center justify-center h-full text-xs text-gray-400">👤</div>
                                                         )}
